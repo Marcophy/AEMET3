@@ -21,23 +21,30 @@ from time import sleep
 
 # ****** Functions ******
 def get_data_from_url(in_url, in_api_key):
-    querystring = {"api_key": in_api_key}
-    headers = {'cache-control': "no-cache"}
-    response = requests.get(in_url, headers=headers, params=querystring)
+    """
+    Retrieves data from a given URL using an API key.
 
-    if response.status_code == 200:
-        try:
-            response_json = response.json()
-            response.close()
-            return response_json
-        except ValueError as ferr:
-            print('ERROR in the json conversion:', ferr)
-            response.close()
+    Args:
+        in_url (str): The URL to retrieve data from.
+        in_api_key (str): The API key to authenticate the request.
+
+    Returns:
+        dict or None: The response data in JSON format, or None if an error occurs.
+    """
+    headers = {'cache-control': "no-cache", 'api_key': in_api_key}
+    querystring = {"api_key": in_api_key}
+
+    with requests.get(in_url, headers=headers, params=querystring, timeout=10) as response:
+        if response.status_code == 200:
+            try:
+                response_json = response.json()
+                return response_json
+            except ValueError as ferr:
+                print('ERROR in the json conversion:', ferr)
+                return None
+        else:
+            print('Status code: ', response.status_code)
             return None
-    else:
-        print('Status code: ', response.status_code)
-        response.close()
-        return None
 
 
 def generate_url(in_year, in_station):
@@ -68,20 +75,21 @@ def generate_url(in_year, in_station):
 
 
 # ****** Main ******
-# --- Get the API KEY from environment variable ---
+# --- Local variables
 load_dotenv()
-api_key = os.getenv("APIKEY")
-
+api_key = os.getenv("APIKEY")  # Get the API KEY from environment variable
 station_id = '5514'  # ID of the meteorologic station
+output_file = 'output.json'  # Name of the output file
+year_ini = 1952  # Initial year for scan (1952)
+year_end = 2022  # Final yeat for scan
+
 data_clean = []  # Output variable
 
-# 1952 - 1985
-for year in range(1952, 2022):
-
+# --- Main loop
+for year in range(year_ini, year_end + 1):
     request_url = generate_url(year, station_id)
     data_url = get_data_from_url(request_url, api_key)
 
-    # --- Main script ---
     if data_url['estado'] == 200:
         print('Year:', year, '--> Found')
         data_json = get_data_from_url(data_url['datos'], api_key)
@@ -128,7 +136,7 @@ for year in range(1952, 2022):
         print('Description:', data_url['descripcion'])
 
 # --- Save result ---
-with open('output_1952-2022.json', 'w') as file:
+with open(output_file, 'w') as file:
     json.dump(data_clean, file)
 
 print('END')

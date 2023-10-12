@@ -1,15 +1,37 @@
-data_json = [{'fecha': '2023-01-01', 'indicativo': '5514', 'nombre': 'GRANADA BASE AÉREA', 'provincia': 'GRANADA', 'altitud': '687', 'tmed': '9,9', 'prec': '0,0', 'tmin': '1,5', 'horatmin': '03:00', 'tmax': '18,3', 'horatmax': '13:10', 'dir': '16', 'velmedia': '1,1', 'racha': '4,4', 'horaracha': '20:07', 'sol': '3,8', 'presMax': '947,5', 'horaPresMax': '00', 'presMin': '943,0', 'horaPresMin': '18'}, {'fecha': '2023-01-02', 'indicativo': '5514', 'nombre': 'GRANADA BASE AÉREA', 'provincia': 'GRANADA', 'altitud': '687', 'tmed': '9,8', 'prec': '0,4', 'tmin': '4,2', 'horatmin': '06:26', 'tmax': '15,4', 'horatmax': '14:11', 'dir': '15', 'velmedia': '0,8', 'racha': '3,9', 'horaracha': '07:34', 'sol': '1,4', 'presMax': '946,2', 'horaPresMax': '24', 'presMin': '944,1', 'horaPresMin': 'Varias'}, {'fecha': '2023-01-03', 'indicativo': '5514', 'nombre': 'GRANADA BASE AÉREA', 'provincia': 'GRANADA', 'altitud': '687', 'tmed': '11,4', 'prec': '0,1', 'tmin': '5,1', 'horatmin': '07:28', 'tmax': '17,6', 'horatmax': '15:20', 'dir': '17', 'velmedia': '2,2', 'racha': '4,7', 'horaracha': '18:19', 'sol': '6,7', 'presMax': '949,9', 'horaPresMax': '24', 'presMin': '945,9', 'horaPresMin': '06'}, {'fecha': '2023-01-04', 'indicativo': '5514', 'nombre': 'GRANADA BASE AÉREA', 'provincia': 'GRANADA', 'altitud': '687', 'tmed': '10,1', 'prec': '0,0', 'tmin': '3,0', 'horatmin': '06:15', 'tmax': '17,2', 'horatmax': '14:50', 'dir': '20', 'velmedia': '2,5', 'racha': '6,9', 'horaracha': '14:57', 'sol': '8,5', 'presMax': '952,9', 'horaPresMax': '10', 'presMin': '949,8', 'horaPresMin': '00'}, {'fecha': '2023-01-05', 'indicativo': '5514', 'nombre': 'GRANADA BASE AÉREA', 'provincia': 'GRANADA', 'altitud': '687', 'tmed': '8,6', 'prec': '0,0', 'tmin': '1,0', 'horatmin': '06:40', 'tmax': '16,2', 'horatmax': '14:40', 'dir': '30', 'velmedia': '2,5', 'racha': '5,0', 'horaracha': '14:59', 'sol': '8,5', 'presMax': '951,0', 'horaPresMax': '00', 'presMin': '946,0', 'horaPresMin': '18'}, {'fecha': '2023-01-06', 'indicativo': '5514', 'nombre': 'GRANADA BASE AÉREA', 'provincia': 'GRANADA', 'altitud': '687', 'tmed': '7,6', 'prec': '0,0', 'tmin': '0,5', 'horatmin': '04:50', 'tmax': '14,6', 'horatmax': '14:45', 'dir': '16', 'velmedia': '1,7', 'racha': '3,9', 'horaracha': '18:17', 'sol': '6,5', 'presMax': '947,0', 'horaPresMax': '10', 'presMin': '944,8', 'horaPresMin': '17'}, {'fecha': '2023-01-07', 'indicativo': '5514', 'nombre': 'GRANADA BASE AÉREA', 'provincia': 'GRANADA', 'altitud': '687', 'tmed': '8,8', 'prec': '0,0', 'tmin': '1,7', 'horatmin': '07:10', 'tmax': '15,8', 'horatmax': '14:50', 'dir': '15', 'velmedia': '1,7', 'racha': '4,7', 'horaracha': '14:55', 'sol': '7,2', 'presMax': '947,3', 'horaPresMax': '10', 'presMin': '944,8', 'horaPresMin': '16'}, {'fecha': '2023-01-08', 'indicativo': '5514', 'nombre': 'GRANADA BASE AÉREA', 'provincia': 'GRANADA', 'altitud': '687', 'tmed': '12,6', 'prec': '4,7', 'tmin': '9,7', 'horatmin': '03:30', 'tmax': '15,5', 'horatmax': '11:01', 'dir': '27', 'velmedia': '2,2', 'racha': '7,8', 'horaracha': '22:38', 'sol': '0,1', 'presMax': '945,8', 'horaPresMax': '00', 'presMin': '943,0', 'horaPresMin': '18'}, {'fecha': '2023-01-09', 'indicativo': '5514', 'nombre': 'GRANADA BASE AÉREA', 'provincia': 'GRANADA', 'altitud': '687', 'tmed': '12,2', 'prec': '0,2', 'tmin': '8,8', 'horatmin': '23:40', 'tmax': '15,7', 'horatmax': '12:40', 'dir': '29', 'velmedia': '2,5', 'racha': '6,9', 'horaracha': '07:19', 'sol': '1,8', 'presMax': '949,3', 'horaPresMax': '24', 'presMin': '944,3', 'horaPresMin': '05'}, {'fecha': '2023-01-10', 'indicativo': '5514', 'nombre': 'GRANADA BASE AÉREA', 'provincia': 'GRANADA', 'altitud': '687', 'tmed': '10,0', 'prec': '0,2', 'tmin': '4,2', 'horatmin': '07:30', 'tmax': '15,7', 'horatmax': '14:30', 'dir': '15', 'velmedia': '1,4', 'racha': '4,7', 'horaracha': '21:22', 'sol': '6,1', 'presMax': '950,9', 'horaPresMax': '11', 'presMin': '948,4', 'horaPresMin': '18'}]
-
-data_clean = []
-
-for item in data_json:
-    aux = {'date': item['fecha'], 'Tmax': float(item['tmax'].replace(',', '.'))}
-    data_clean.append(aux)
-
-print(data_clean)
-
-for year in range(2000, 2010):
-    print(year)
 
 
-print('END')
+# ****** Modules ******
+import os
+import json
+import numpy as np
+import requests
+from dotenv import load_dotenv
+import datetime
+from time import sleep
+
+
+# ****** Functions ******
+
+
+# ****** Main ******
+
+try:
+    with open('setup.json', 'r') as file:
+        setup_data = json.load(file)
+except FileNotFoundError:
+    print('Historical file not found')
+except json.JSONDecodeError as err:
+    print('JSON decoding error:', err)
+except Exception as err:
+    print('ERROR reading historical file:', err)
+
+# --- Year update
+report_date = setup_data['lastReport'].split('-')
+
+if datetime.date.today().month > int(report_date[1]):
+    print('Mostrar datos')
+
+if datetime.date.today().month > int(report_date[0]):
+    print('Actualizar year')
+
+print('END\n')
