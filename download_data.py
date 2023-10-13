@@ -81,7 +81,7 @@ api_key = os.getenv("APIKEY")  # Get the API KEY from environment variable
 station_id = '5514'  # ID of the meteorologic station
 output_file = 'output.json'  # Name of the output file
 year_ini = 1952  # Initial year for scan (1952)
-year_end = 2022  # Final yeat for scan
+year_end = 2022  # Final year for scan
 
 data_clean = []  # Output variable
 
