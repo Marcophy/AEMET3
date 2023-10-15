@@ -1,37 +1,26 @@
-
-
-# ****** Modules ******
-import os
-import json
+import matplotlib.pyplot as plt
 import numpy as np
-import requests
-from dotenv import load_dotenv
-import datetime
-from time import sleep
 
+# Datos de ejemplo (asegúrate de reemplazarlos con tus listas reales)
+tmax = [25, 28, 30, 32, 29, 27]
+tmin = [15, 18, 20, 22, 19, 17]
+prec = [5, 8, 2, 12, 6, 4]
 
-# ****** Functions ******
+# Crear una figura con dos paneles (altura del panel superior es el doble del panel inferior)
+fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(20, 11), gridspec_kw={'height_ratios': [2, 1]}, sharex=True)
+plt.subplots_adjust(hspace=0.0)  # Ajustar el espacio vertical entre los paneles
 
+# Panel superior: Área entre tmax y tmin
+dias = np.arange(len(tmax))
+ax1.fill_between(dias, tmin, tmax, color='lightblue', label='Tmin-Tmax Area')
+ax1.set_ylabel('Temperatura (°C)')
+ax1.legend()
 
-# ****** Main ******
+# Panel inferior: Gráfico de barras de precipitación
+ax2.bar(dias, prec, color='lightblue')
+ax2.set_xlabel('Días')
+ax2.set_ylabel('Precipitación (mm)')
 
-try:
-    with open('setup.json', 'r') as file:
-        setup_data = json.load(file)
-except FileNotFoundError:
-    print('Historical file not found')
-except json.JSONDecodeError as err:
-    print('JSON decoding error:', err)
-except Exception as err:
-    print('ERROR reading historical file:', err)
+# Mostrar la figura
+plt.show()
 
-# --- Year update
-report_date = setup_data['lastReport'].split('-')
-
-if datetime.date.today().month > int(report_date[1]):
-    print('Mostrar datos')
-
-if datetime.date.today().month > int(report_date[0]):
-    print('Actualizar year')
-
-print('END\n')

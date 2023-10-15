@@ -1,5 +1,7 @@
 {
   "lastReport": "2023-10",
+  "firstYear": 1952,
   "starionId": "5514",
-  "stationName": "BASE AEREA ARMILLA - GRANADA"
+  "stationName": "BASE AEREA ARMILLA - GRANADA",
+  "outputHistorical": "historical.json"
 }

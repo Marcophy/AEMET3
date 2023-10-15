@@ -74,20 +74,38 @@ def generate_url(in_year, in_station):
     return url
 
 
+def load_setup(in_path):
+    try:
+        with open(in_path, 'r') as file:
+            return json.load(file)
+    except FileNotFoundError:
+        print('XXXX file not found')  # TODO: Modify the script to addapt the message to the file name
+        return False
+    except json.JSONDecodeError as err:
+        print('JSON decoding error:', err)
+        return False
+    except Exception as err:
+        print('ERROR reading historical file:', err)
+        return False
+
+
 # ****** Main ******
+# --- Load setup parameters
+setup = load_setup('setup.json')
+
 # --- Local variables
 load_dotenv()
 api_key = os.getenv("APIKEY")  # Get the API KEY from environment variable
-station_id = '5514'  # ID of the meteorologic station
-output_file = 'output.json'  # Name of the output file
-year_ini = 1952  # Initial year for scan (1952)
+# station_id = '5514'  # ID of the meteorologic station
+# output_file = 'output.json'  # Name of the output file
+# year_ini = 1952  # Initial year for scan (1952)
 year_end = 2022  # Final year for scan
 
 data_clean = []  # Output variable
 
 # --- Main loop
-for year in range(year_ini, year_end + 1):
-    request_url = generate_url(year, station_id)
+for year in range(setup['firstYear'], year_end + 1):
+    request_url = generate_url(year, setup['starionId'])
     data_url = get_data_from_url(request_url, api_key)
 
     if data_url['estado'] == 200:
@@ -108,6 +126,7 @@ for year in range(year_ini, year_end + 1):
         tmax_list = []
         tmed_list = []
         tmin_list = []
+        prec_list = []
         for item in data_json:
             try:
                 tmax_list.append(float(item['tmax'].replace(',', '.')))
@@ -127,7 +146,13 @@ for year in range(year_ini, year_end + 1):
                 tmin_list.append(None)
                 complete = False
 
-        aux = {'year': year, 'completeYear': complete, 'leapYear': leap_year, 'tmax': tmax_list, 'tmed': tmed_list, 'tmin': tmin_list}
+            try:
+                prec_list.append(float(item['prec'].replace(',', '.')))
+            except:
+                prec_list.append(None)
+                complete = False
+
+        aux = {'year': year, 'completeYear': complete, 'leapYear': leap_year, 'tmax': tmax_list, 'tmed': tmed_list, 'tmin': tmin_list, 'prec': prec_list}
         data_clean.append(aux)
 
     else:
@@ -136,6 +161,7 @@ for year in range(year_ini, year_end + 1):
         print('Description:', data_url['descripcion'])
 
 # --- Save result ---
+output_file = os.getcwd() + '\\data\\' + setup['outputHistorical']
 with open(output_file, 'w') as file:
     json.dump(data_clean, file)
 
