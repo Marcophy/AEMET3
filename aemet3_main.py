@@ -38,7 +38,7 @@ else:
     print('ERROR: setup.json file not found.')
     exit()
 
-# Load the APIKEY from enviroment
+# Load the APIKEY from environment
 load_dotenv()
 api_key = os.getenv("APIKEY")
 
@@ -67,11 +67,11 @@ if kernel.check_time(setup_parameters['lastReport'], setup_parameters['timeElaps
         kernel.update_setup(setup_parameters, 'lastYear', datetime.now().year - 1, setup_path)
 
         # Download all historical data
-        print('Generating new historical.json file ...')
+        print('Generating new historical.json file. It may take some time ...')
         clean_data = []
         for year in range(setup_parameters['firstYear'], setup_parameters['lastYear'] + 1):
             print(year)
-            year_data = kernel.download_year_data(year, setup_parameters['starionId'], api_key)
+            year_data = kernel.download_year_data(year, setup_parameters['stationId'], api_key)
             if year_data is False:
                 exit()
             else:
@@ -86,7 +86,7 @@ if kernel.check_time(setup_parameters['lastReport'], setup_parameters['timeElaps
 
     else:  # Update historical if it is outdated
         if datetime.now().year > setup_parameters['lastYear'] + 1:
-            current_year = kernel.download_year_data(datetime.now().year - 1, setup_parameters['starionId'], api_key)
+            current_year = kernel.download_year_data(datetime.now().year - 1, setup_parameters['stationId'], api_key)
             if current_year is False:
                 exit()
             else:
@@ -119,11 +119,12 @@ if kernel.check_time(setup_parameters['lastReport'], setup_parameters['timeElaps
             exit()
 
     # Download current year data from AEMET API
-    current_data = kernel.download_year_data(datetime.now().year, setup_parameters['starionId'], api_key)
+    current_data = kernel.download_year_data(datetime.now().year, setup_parameters['stationId'], api_key)
     if current_data is False:
         exit()
     else:
-        # --- Plot resutl
+        # --- Plot result
+        print('Plotting ...')
         kernel.plot_result(summary_data, current_data)
 
 

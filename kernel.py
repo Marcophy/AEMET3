@@ -70,31 +70,25 @@ def calculate_mean_values(in_path, out_path):
     divider_min = np.full(365, len(historical_data))
     divider_prec = np.full(365, len(historical_data))
 
-    # --- Collect the data and calcutate values
+    # --- Collect the data and calculate values
     for reg in historical_data:
-        if reg['leapYear']:  # Remove the extra data measured the February 29th
-            reg['tmax'].pop(59)
-            reg['tmed'].pop(59)
-            reg['tmin'].pop(59)
-            reg['prec'].pop(59)
+        # Clean the None values
+        for index in range(365):
+            if reg['tmax'][index] is None:
+                reg['tmax'][index] = 0
+                divider_max[index] -= 1
 
-        if reg['completeYear'] is False:  # Define as 0 all None values and discount one value per None for the mean calculation
-            for index in range(365):
-                if reg['tmax'][index] is None:
-                    reg['tmax'][index] = 0
-                    divider_max[index] -= 1
+            if reg['tmed'][index] is None:
+                reg['tmed'][index] = 0
+                divider_med[index] -= 1
 
-                if reg['tmed'][index] is None:
-                    reg['tmed'][index] = 0
-                    divider_med[index] -= 1
+            if reg['tmin'][index] is None:
+                reg['tmin'][index] = 0
+                divider_min[index] -= 1
 
-                if reg['tmin'][index] is None:
-                    reg['tmin'][index] = 0
-                    divider_min[index] -= 1
-
-                if reg['prec'][index] is None:
-                    reg['prec'][index] = 0
-                    divider_prec[index] -= 1
+            if reg['prec'][index] is None:
+                reg['prec'][index] = 0
+                divider_prec[index] -= 1
 
         tmax = tmax + np.array(reg['tmax'])
         tmed = tmed + np.array(reg['tmed'])
@@ -254,7 +248,7 @@ def plot_result(in_summary, in_current):
     limit_min = min([min(in_summary['tmin']), min(in_current['tmin'])])
     ax1.axis([0, 364, limit_min - 2, limit_max + 2])
 
-    # Botton panel: Rain
+    # Bottom panel: Rain
     ax2.bar(days, in_summary['prec'], color='green', label='Historical')
     ax2.scatter(days_current, in_current['prec'], marker='_', color='blue', label='Current year')
     ax2.set_xlabel('Days')
