@@ -1,26 +1,15 @@
-import matplotlib.pyplot as plt
-import numpy as np
+def mi_funcion(numero1, numero2):
+    if [numero1, numero2] != [2, 29]:
+        # El código de la función se ejecuta solo si la lista [numero1, numero2] es diferente de [2, 29]
+        print("Se ejecutó la función")
 
-# Datos de ejemplo (asegúrate de reemplazarlos con tus listas reales)
-tmax = [25, 28, 30, 32, 29, 27]
-tmin = [15, 18, 20, 22, 19, 17]
-prec = [5, 8, 2, 12, 6, 4]
+# Ejemplo de uso de la función
+numero1 = 3  # Cambia el valor de numero1 según tu necesidad
+numero2 = 29  # Cambia el valor de numero2 según tu necesidad
 
-# Crear una figura con dos paneles (altura del panel superior es el doble del panel inferior)
-fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(20, 11), gridspec_kw={'height_ratios': [2, 1]}, sharex=True)
-plt.subplots_adjust(hspace=0.0)  # Ajustar el espacio vertical entre los paneles
+mi_funcion(numero1, numero2)
 
-# Panel superior: Área entre tmax y tmin
-dias = np.arange(len(tmax))
-ax1.fill_between(dias, tmin, tmax, color='lightblue', label='Tmin-Tmax Area')
-ax1.set_ylabel('Temperatura (°C)')
-ax1.legend()
 
-# Panel inferior: Gráfico de barras de precipitación
-ax2.bar(dias, prec, color='lightblue')
-ax2.set_xlabel('Días')
-ax2.set_ylabel('Precipitación (mm)')
 
-# Mostrar la figura
-plt.show()
 
+print('END')

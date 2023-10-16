@@ -17,6 +17,8 @@ import json
 import numpy as np
 import requests
 import matplotlib.pyplot as plt
+from datetime import datetime, timedelta
+from time import sleep
 
 
 # ****** Functions ******
@@ -35,10 +37,26 @@ def load_json(in_file):
         return False
 
 
-def calculate_mean_values(in_path, in_file):
-    file_path = os.path.join(in_path, in_file)
+def check_time(in_last_report, in_elapse):
+    delta = datetime.today() - datetime.strptime(in_last_report, "%Y-%m-%d")
+    if delta > timedelta(in_elapse):
+        return True
+    else:
+        return False
+
+
+def update_setup(in_json, in_id, in_new_parameter, in_path):
+    in_json[in_id] = in_new_parameter
+
+    with open(in_path, 'w') as file:
+        json.dump(in_json, file, indent=2)
+
+    return in_json
+
+
+def calculate_mean_values(in_path, out_path):
     # --- Read the historical file
-    historical_data = load_json(file_path)
+    historical_data = load_json(in_path)
     if historical_data is False:
         exit()
 
@@ -92,9 +110,8 @@ def calculate_mean_values(in_path, in_file):
     # --- Generate JSON structure and save it in file
     json_output = {'tmax': tmax.tolist(), 'tmed': tmed.tolist(), 'tmin': tmin.tolist(), 'prec': prec.tolist()}
 
-    output_path = os.path.join(in_path, 'summary.json')
     try:
-        with open(output_path, 'w') as file:
+        with open(out_path, 'w') as file:
             json.dump(json_output, file)
 
         return True
@@ -103,7 +120,7 @@ def calculate_mean_values(in_path, in_file):
         return False
 
 
-def generate_url(in_year, in_station):
+def generate_url(in_year, in_station):  # OBSOLETE
     """
     Generate a URL for retrieving climatological data from AEMET API.
 
@@ -141,6 +158,7 @@ def get_data_from_url(in_url, in_api_key):
     Returns:
         dict or None: The response data in JSON format, or None if an error occurs.
     """
+
     headers = {'cache-control': "no-cache", 'api_key': in_api_key}
     querystring = {"api_key": in_api_key}
 
@@ -157,22 +175,27 @@ def get_data_from_url(in_url, in_api_key):
             return None
 
 
-def get_current_data(in_url, in_api_key):
+def get_current_data(in_url, in_api_key, in_year):
     data_json = get_data_from_url(in_url, in_api_key)
+    sleep(1)
 
     if len(data_json) == 366:
         leap_year = True
     else:
         leap_year = False
 
+    if len(data_json) < 365:
+        complete = False
+    else:
+        complete = True
+
     tmax_list = []
     tmed_list = []
     tmin_list = []
     prec_list = []
     for item in data_json:
-        if leap_year and item != 59:
-            pass
-        else:
+        current_date = item['fecha'].split('-')
+        if [int(current_date[1]), int(current_date[2])] != [2, 29]:
             try:
                 tmax_list.append(float(item['tmax'].replace(',', '.')))
             except:
@@ -193,12 +216,28 @@ def get_current_data(in_url, in_api_key):
             except:
                 prec_list.append(None)
 
-    return {'tmax': tmax_list, 'tmed': tmed_list, 'tmin': tmin_list, 'prec': prec_list}
+    return {'year': in_year, 'completeYear': complete, 'leapYear': leap_year, 'tmax': tmax_list, 'tmed': tmed_list, 'tmin': tmin_list, 'prec': prec_list}
+
+
+def download_year_data(in_year, in_station, in_api_key):
+    # Generate the query url according to the input data
+    url = "https://opendata.aemet.es/opendata/api/valores/climatologicos/diarios/datos/fechaini/{dateIniStr}/fechafin/{dateEndStr}/estacion/{stationid}"
+    date_ini = str(in_year) + '-01-01T00%3A00%3A00UTC'  # Initial date (format: YYYY-MM-DDTHH%3AMM%3ASSUTC)
+    date_end = str(in_year) + '-12-31T00%3A00%3A00UTC'  # Final date (format: AAAA-MM-DDTHH%3AMM%3ASSUTC)
+
+    url = url.format(dateIniStr=date_ini, dateEndStr=date_end, stationid=in_station)
+
+    # Get url of the output of the query
+    data_url = get_data_from_url(url, in_api_key)
+    if data_url['estado'] == 200:
+        return get_current_data(data_url['datos'], in_api_key, in_year)
+    else:
+        print('ERROR')  # TODO: Identify the error
+        return False
 
 
 def plot_result(in_summary, in_current):
-    # TODO: Automatic adjustment of y-axis limits
-    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(20, 11), gridspec_kw={'height_ratios': [2, 1]}, sharex=True)
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(25, 13), gridspec_kw={'height_ratios': [2, 1]}, sharex=True)
     plt.subplots_adjust(hspace=0.05)  # Define the space between plots
 
     # Top panel: Temperature
@@ -210,7 +249,10 @@ def plot_result(in_summary, in_current):
     ax1.fill_between(days, in_summary['tmin'], in_summary['tmax'], color='blue', alpha=0.1, label='Historical')
     ax1.set_ylabel('Temperature (°C)')
     ax1.legend()
-    ax1.axis([0, 364, -10, 45])
+
+    limit_max = max([max(in_summary['tmax']), max(in_current['tmax'])])
+    limit_min = min([min(in_summary['tmin']), min(in_current['tmin'])])
+    ax1.axis([0, 364, limit_min - 2, limit_max + 2])
 
     # Botton panel: Rain
     ax2.bar(days, in_summary['prec'], color='green', label='Historical')
@@ -221,7 +263,19 @@ def plot_result(in_summary, in_current):
 
     tick = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334]
     plt.xticks(tick, ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'])
-    ax2.axis([0, 364, -0.2, 15])
+
+    # Calculate the y-axis limit
+    if None in in_summary['prec']:
+        summary_max = max(value for value in in_summary['prec'] if value is not None)
+    else:
+        summary_max = max(in_summary['prec'])
+
+    if None in in_current['prec']:
+        current_max = max(value for value in in_current['prec'] if value is not None)
+    else:
+        current_max = max(in_current['prec'])
+    limit_max = max([summary_max, current_max])
+    ax2.axis([0, 364, -0.2, limit_max + 2])
 
     # Show figure
     plt.show()
