@@ -261,7 +261,7 @@ def download_year_data(in_year, in_station, in_api_key):
     if data_url is not None and data_url.get('estado') == 200:
         return get_current_data(data_url.get('datos'), in_api_key, in_year)
     else:
-        print('ERROR')  # TODO: Identify the error
+        print('ERROR: Data cannot be downloaded from API.')
         return False
 
 
