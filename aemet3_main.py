@@ -11,11 +11,11 @@ __email__ = "mavillenas@proton.me"
 __version__ = "1.0"
 __project_date__ = '2023'
 
-import json
 
 # ****** Modules ******
-import kernel
 import os
+import kernel
+import json
 from dotenv import load_dotenv
 from datetime import datetime
 
@@ -24,7 +24,7 @@ from datetime import datetime
 files_control = {'historical': True, 'summary': True}  # Control if the historical and the summary file exist
 
 # Checking setup file
-setup_path = os.path.join(os.getcwd(), 'setup.json')
+setup_path = os.path.join(os.getcwd(), 'config.json')
 historical_path = os.path.join(os.getcwd(), 'data', 'historical.json')
 summary_path = os.path.join(os.getcwd(), 'data', 'summary.json')
 
@@ -33,9 +33,9 @@ if os.path.exists(setup_path):
     if setup_parameters is False:
         exit()
     else:
-        print('setup.json --> OK')
+        print('config.json --> OK')
 else:
-    print('ERROR: setup.json file not found.')
+    print('ERROR: config.json file not found.')
     exit()
 
 # Load the APIKEY from environment
@@ -44,7 +44,7 @@ api_key = os.getenv("APIKEY")
 
 # Checking the data folder, historical, and summary files
 if kernel.check_time(setup_parameters['lastReport'], setup_parameters['timeElapse']):
-    # Update setup.json
+    # Update config.json
     today = datetime.now().strftime('%Y-%m-%d')
     setup_parameters = kernel.update_setup(setup_parameters, 'lastReport', today, setup_path)
 
@@ -97,7 +97,7 @@ if kernel.check_time(setup_parameters['lastReport'], setup_parameters['timeElaps
                         json.dump(temp_historical, file)
 
                     print('historical.json file updated.')
-                    setup_parameters = kernel.update_setup(setup_parameters, 'lastYear', datetime.now().year - 1, setup_path)  # Update setup.json
+                    setup_parameters = kernel.update_setup(setup_parameters, 'lastYear', datetime.now().year - 1, setup_path)  # Update config.json
                     files_control['summary'] = False  # Force the regeneration of the summary file
         else:
             print('historical.json --> OK')
