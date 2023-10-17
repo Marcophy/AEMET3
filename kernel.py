@@ -8,12 +8,12 @@ Marco A. Villena, PhD.
 __project_name__ = "AEMET temperature track - KERNEL"
 __author__ = "Marco A. Villena"
 __email__ = "mavillenas@proton.me"
-__version__ = "0.1"
+__version__ = "1.0"
 __project_date__ = '2023'
 
 # ****** Modules ******
-import os
 import json
+import copy
 import numpy as np
 import requests
 import matplotlib.pyplot as plt
@@ -39,23 +39,57 @@ def load_json(in_file):
 
 
 def check_time(in_last_report, in_elapse):
+    """
+    Check if the time elapsed since the last report is greater than a specified duration.
+
+    Parameters:
+    - in_last_report (str): The date of the last report in the format 'YYYY-MM-DD'.
+    - in_elapse (int): The duration in days.
+
+    Returns:
+    - bool: True if the time elapsed is greater than the specified duration, False otherwise.
+    """
+    
     delta = datetime.today() - datetime.strptime(in_last_report, "%Y-%m-%d")
-    if delta > timedelta(days=in_elapse):
-        return True
-    else:
-        return False
+    return delta > timedelta(days=in_elapse)
 
 
 def update_setup(in_json, in_id, in_new_parameter, in_path):
-    in_json[in_id] = in_new_parameter
+    """
+    Update the setup JSON file with a new parameter value.
 
-    with open(in_path, 'w') as file:
-        json.dump(in_json, file, indent=2)
+    Args:
+        in_json (dict): The original JSON dictionary.
+        in_id (str): The ID of the parameter to be updated.
+        in_new_parameter (any): The new value for the parameter.
+        in_path (str): The path to the JSON file.
 
-    return in_json
+    Returns:
+        dict: The updated JSON dictionary.
+    """
+
+    updated_json = copy.deepcopy(in_json)
+    updated_json[in_id] = in_new_parameter
+
+    if updated_json.get(in_id) != in_json.get(in_id):
+        with open(in_path, 'w') as file:
+            json.dump(updated_json, file, indent=2)
+
+    return updated_json
 
 
 def calculate_mean_values(in_path, out_path):
+    """
+    Calculate the mean values of temperature and precipitation from historical data.
+
+    Args:
+        in_path (str): The path to the input JSON file.
+        out_path (str): The path to save the output JSON file.
+
+    Returns:
+        bool: True if the calculation and saving are successful, False otherwise.
+    """
+
     # --- Read the historical file
     historical_data = load_json(in_path)
     if historical_data is False:
@@ -193,22 +227,22 @@ def get_current_data(in_url, in_api_key, in_year):
         if [int(current_date[1]), int(current_date[2])] != [2, 29]:
             try:
                 tmax_list.append(float(item['tmax'].replace(',', '.')))
-            except:
+            except ValueError:
                 tmax_list.append(None)
 
             try:
                 tmed_list.append(float(item['tmed'].replace(',', '.')))
-            except:
+            except ValueError:
                 tmed_list.append(None)
 
             try:
                 tmin_list.append(float(item['tmin'].replace(',', '.')))
-            except:
+            except ValueError:
                 tmin_list.append(None)
 
             try:
                 prec_list.append(float(item['prec'].replace(',', '.')))
-            except:
+            except ValueError:
                 prec_list.append(None)
 
     return {'year': in_year, 'completeYear': complete, 'leapYear': leap_year, 'tmax': tmax_list, 'tmed': tmed_list, 'tmin': tmin_list, 'prec': prec_list}
@@ -224,8 +258,8 @@ def download_year_data(in_year, in_station, in_api_key):
 
     # Get url of the output of the query
     data_url = get_data_from_url(url, in_api_key)
-    if data_url['estado'] == 200:
-        return get_current_data(data_url['datos'], in_api_key, in_year)
+    if data_url is not None and data_url.get('estado') == 200:
+        return get_current_data(data_url.get('datos'), in_api_key, in_year)
     else:
         print('ERROR')  # TODO: Identify the error
         return False
