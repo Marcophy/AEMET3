@@ -17,6 +17,7 @@ import json
 import numpy as np
 import requests
 import matplotlib.pyplot as plt
+from matplotlib.ticker import MultipleLocator
 from datetime import datetime, timedelta
 from time import sleep
 
@@ -39,7 +40,7 @@ def load_json(in_file):
 
 def check_time(in_last_report, in_elapse):
     delta = datetime.today() - datetime.strptime(in_last_report, "%Y-%m-%d")
-    if delta > timedelta(in_elapse):
+    if delta > timedelta(days=in_elapse):
         return True
     else:
         return False
@@ -230,8 +231,8 @@ def download_year_data(in_year, in_station, in_api_key):
         return False
 
 
-def plot_result(in_summary, in_current):
-    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(25, 13), gridspec_kw={'height_ratios': [2, 1]}, sharex=True)
+def plot_result(in_summary, in_current, in_parameters):
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=tuple(in_parameters['figureSize']), gridspec_kw={'height_ratios': [2, 1]}, sharex=True)
     plt.subplots_adjust(hspace=0.05)  # Define the space between plots
 
     # Top panel: Temperature
@@ -239,24 +240,35 @@ def plot_result(in_summary, in_current):
     days_current = np.arange(len(in_current['tmax']))
     ax1.plot(days_current, in_current['tmax'], color='red', linewidth=1, linestyle='dotted', label='Max. temperature')
     ax1.plot(days_current, in_current['tmin'], color='blue', linewidth=1, linestyle='dotted', label='Min. temperature')
+    historical_label = 'Historical ' + str(in_parameters['firstYear']) + ' - ' + str(in_parameters['lastYear'])
+    ax1.fill_between(days, in_summary['tmin'], in_summary['tmax'], color='blue', alpha=0.1, label=historical_label)
     ax1.plot(days, in_summary['tmed'], color='purple', linewidth=1, label='Mean historical')
-    ax1.fill_between(days, in_summary['tmin'], in_summary['tmax'], color='blue', alpha=0.1, label='Historical')
-    ax1.set_ylabel('Temperature (°C)')
-    ax1.legend()
+    ax1.set_ylabel('Temperature (°C)', fontsize=14)
+    ax1.legend(fontsize=12)
+    ax1.set_title('Data from ' + in_parameters['stationName'])
 
     limit_max = max([max(in_summary['tmax']), max(in_current['tmax'])])
     limit_min = min([min(in_summary['tmin']), min(in_current['tmin'])])
     ax1.axis([0, 364, limit_min - 2, limit_max + 2])
+    ax1.yaxis.set_major_locator(MultipleLocator(2))
+    ax1.tick_params(axis='y', labelsize=12)
+
+    ax1.grid(color='lightgray', linestyle='--', linewidth=0.5)
+
+    if in_parameters['figureColor'][0]:  # Add color to the background of Temperature plot
+        gradient = np.linspace(1, 0, 256).reshape(1, -1)
+        gradient = np.vstack((gradient, gradient)).transpose()
+        ax1.imshow(gradient, aspect='auto', cmap='jet', alpha=0.025, extent=ax1.get_xlim() + ax1.get_ylim())
 
     # Bottom panel: Rain
-    ax2.bar(days, in_summary['prec'], color='green', label='Historical')
+    ax2.bar(days, in_summary['prec'], color='green', label=historical_label)
     ax2.scatter(days_current, in_current['prec'], marker='_', color='blue', label='Current year')
-    ax2.set_xlabel('Days')
-    ax2.set_ylabel('Rain (mm)')
-    ax2.legend()
+    ax2.set_ylabel('Rain (mm)', fontsize=14)
+    ax2.legend(fontsize=12)
 
     tick = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334]
     plt.xticks(tick, ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'])
+    ax2.tick_params(axis='both', labelsize=12)
 
     # Calculate the y-axis limit
     if None in in_summary['prec']:
@@ -270,6 +282,11 @@ def plot_result(in_summary, in_current):
         current_max = max(in_current['prec'])
     limit_max = max([summary_max, current_max])
     ax2.axis([0, 364, -0.2, limit_max + 2])
+
+    ax2.grid(axis='x', color='lightgray', linestyle='--', linewidth=0.5)
+
+    if in_parameters['figureColor'][1]:  # Add color to the background of Rain plot
+        ax2.set_facecolor('#f0fdff')
 
     # Show figure
     plt.show()

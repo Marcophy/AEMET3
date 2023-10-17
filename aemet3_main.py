@@ -91,7 +91,7 @@ if kernel.check_time(setup_parameters['lastReport'], setup_parameters['timeElaps
                 exit()
             else:
                 if len(current_year) >= 365:  # If the new year has all data
-                    temp_historical = kernel.load_json(os.path.join(os.getcwd(), 'data', setup_parameters['outputHistorical']))
+                    temp_historical = kernel.load_json(historical_path)
                     temp_historical.append(current_year)
                     with open(historical_path, 'w') as file:
                         json.dump(temp_historical, file)
@@ -125,7 +125,7 @@ if kernel.check_time(setup_parameters['lastReport'], setup_parameters['timeElaps
     else:
         # --- Plot result
         print('Plotting ...')
-        kernel.plot_result(summary_data, current_data)
+        kernel.plot_result(summary_data, current_data, setup_parameters)
 
 
 print('END')

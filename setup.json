@@ -1,9 +1,16 @@
 {
-  "lastReport": "2023-10-16",
+  "lastReport": "2023-10-17",
   "timeElapse": 0,
   "firstYear": 1953,
   "lastYear": 2022,
   "stationId": "5514",
   "stationName": "BASE AEREA ARMILLA - GRANADA",
-  "outputHistorical": "historical.json"
+  "figureSize": [
+    25,
+    13
+  ],
+  "figureColor": [
+    false,
+    true
+  ]
 }
