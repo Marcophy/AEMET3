@@ -41,3 +41,4 @@ AMAT3 was developed in [Python v3.10](https://www.python.org/downloads/release/p
 - [Matplotlib](https://matplotlib.org/)
 - [Dotenv](https://pypi.org/project/python-dotenv/)
 - [Requests](https://requests.readthedocs.io/en/latest/)
+
