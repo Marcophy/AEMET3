@@ -41,6 +41,9 @@ else:
 # Load the APIKEY from environment
 load_dotenv()
 api_key = os.getenv("APIKEY")
+if api_key is None:
+    print('ERROR: API KEY cannot be loaded.')
+    exit()
 
 # Checking the data folder, historical, and summary files
 if kernel.check_time(setup_parameters['lastReport'], setup_parameters['timeElapse']):
@@ -103,7 +106,7 @@ if kernel.check_time(setup_parameters['lastReport'], setup_parameters['timeElaps
             print('historical.json --> OK')
 
     if files_control['summary'] is False and files_control['historical'] is True:
-        if kernel.calculate_mean_values(historical_path, summary_path):
+        if kernel.post_process_data(historical_path, summary_path):
             print('summary.json file generated')
             files_control['summary'] = True
         else:

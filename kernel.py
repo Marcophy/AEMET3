@@ -78,7 +78,7 @@ def update_setup(in_json, in_id, in_new_parameter, in_path):
     return updated_json
 
 
-def calculate_mean_values(in_path, out_path):
+def post_process_data(in_path, out_path):
     """
     Calculate the mean values of temperature and precipitation from historical data.
 
@@ -105,6 +105,9 @@ def calculate_mean_values(in_path, out_path):
     divider_min = np.full(365, len(historical_data))
     divider_prec = np.full(365, len(historical_data))
 
+    tmax_record = np.full(365, -100)
+    tmin_record = np.full(365, 100)
+
     # --- Collect the data and calculate values
     for reg in historical_data:
         # Clean the None values
@@ -112,6 +115,9 @@ def calculate_mean_values(in_path, out_path):
             if reg['tmax'][index] is None:
                 reg['tmax'][index] = 0
                 divider_max[index] -= 1
+            else:  # Calculate maximum temperature record
+                if reg['tmax'][index] > tmax_record[index]:
+                    tmax_record[index] = reg['tmax'][index]
 
             if reg['tmed'][index] is None:
                 reg['tmed'][index] = 0
@@ -120,10 +126,14 @@ def calculate_mean_values(in_path, out_path):
             if reg['tmin'][index] is None:
                 reg['tmin'][index] = 0
                 divider_min[index] -= 1
+            else:  # Calculate minimum temperature record
+                if reg['tmin'][index] < tmin_record[index]:
+                    tmin_record[index] = reg['tmin'][index]
 
             if reg['prec'][index] is None:
                 reg['prec'][index] = 0
                 divider_prec[index] -= 1
+
 
         tmax = tmax + np.array(reg['tmax'])
         tmed = tmed + np.array(reg['tmed'])
@@ -137,7 +147,7 @@ def calculate_mean_values(in_path, out_path):
     prec = prec / divider_prec
 
     # --- Generate JSON structure and save it in file
-    json_output = {'tmax': tmax.tolist(), 'tmed': tmed.tolist(), 'tmin': tmin.tolist(), 'prec': prec.tolist()}
+    json_output = {'tmax': tmax.tolist(), 'tmed': tmed.tolist(), 'tmin': tmin.tolist(), 'recordMax': tmax_record.tolist(), 'recordMin': tmin_record.tolist(), 'prec': prec.tolist()}
 
     try:
         with open(out_path, 'w') as file:
@@ -274,15 +284,23 @@ def plot_result(in_summary, in_current, in_parameters):
     days_current = np.arange(len(in_current['tmax']))
     ax1.plot(days_current, in_current['tmax'], color='red', linewidth=1, linestyle='dotted', label='Max. temperature')
     ax1.plot(days_current, in_current['tmin'], color='blue', linewidth=1, linestyle='dotted', label='Min. temperature')
+    if in_parameters['showRecords']:  # Show the historical records
+        record_label = 'Historical records ' + str(in_parameters['firstYear']) + ' - ' + str(in_parameters['lastYear'])
+        ax1.fill_between(days, in_summary['recordMin'], in_summary['recordMax'], color='#e5e5ff', alpha=0.5, label=record_label)
     historical_label = 'Historical ' + str(in_parameters['firstYear']) + ' - ' + str(in_parameters['lastYear'])
-    ax1.fill_between(days, in_summary['tmin'], in_summary['tmax'], color='blue', alpha=0.1, label=historical_label)
+    ax1.fill_between(days, in_summary['tmin'], in_summary['tmax'], color='#c1c1ff', alpha=0.5, label=historical_label)
     ax1.plot(days, in_summary['tmed'], color='purple', linewidth=1, label='Mean historical')
     ax1.set_ylabel('Temperature (°C)', fontsize=14)
     ax1.legend(fontsize=12)
     ax1.set_title('Data from ' + in_parameters['stationName'])
 
-    limit_max = max([max(in_summary['tmax']), max(in_current['tmax'])])
-    limit_min = min([min(in_summary['tmin']), min(in_current['tmin'])])
+    if in_parameters['showRecords']:  # Y-axis limit with records
+        limit_max = max([max(in_summary['recordMax']), max(in_current['tmax'])])
+        limit_min = min([min(in_summary['recordMin']), min(in_current['tmin'])])
+    else:  # Y-axis limit without records
+        limit_max = max([max(in_summary['tmax']), max(in_current['tmax'])])
+        limit_min = min([min(in_summary['tmin']), min(in_current['tmin'])])
+
     ax1.axis([0, 364, limit_min - 2, limit_max + 2])
     ax1.yaxis.set_major_locator(MultipleLocator(2))
     ax1.tick_params(axis='y', labelsize=12)
