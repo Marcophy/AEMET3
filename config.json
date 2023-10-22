@@ -5,6 +5,7 @@
   "lastYear": 2022,
   "stationId": "5514",
   "stationName": "BASE AEREA ARMILLA - GRANADA",
+  "showMean": true,
   "showRecords": true,
   "figureSize": [
     25,

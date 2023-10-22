@@ -8,7 +8,7 @@ Marco A. Villena, PhD.
 __project_name__ = "AEMET temperature track - KERNEL"
 __author__ = "Marco A. Villena"
 __email__ = "mavillenas@proton.me"
-__version__ = "1.0"
+__version__ = "1.2"
 __project_date__ = '2023'
 
 # ****** Modules ******
@@ -275,6 +275,20 @@ def download_year_data(in_year, in_station, in_api_key):
         return False
 
 
+def get_new_record(in_current, in_summary):
+    maxs = []
+    mins = []
+
+    for i in range(len(in_current['tmax'])):
+        if in_current['tmax'][i] > in_summary['recordMax'][i]:
+            maxs.append([i, in_current['tmax'][i]])
+
+        if in_current['tmin'][i] < in_summary['recordMin'][i]:
+            mins.append([i, in_current['tmin'][i]])
+
+    return np.array(maxs), np.array(mins)
+
+
 def plot_result(in_summary, in_current, in_parameters):
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=tuple(in_parameters['figureSize']), gridspec_kw={'height_ratios': [2, 1]}, sharex=True)
     plt.subplots_adjust(hspace=0.05)  # Define the space between plots
@@ -288,10 +302,17 @@ def plot_result(in_summary, in_current, in_parameters):
     historical_label = 'Historical ' + str(in_parameters['firstYear']) + ' - ' + str(in_parameters['lastYear'])
     ax1.fill_between(days, in_summary['tmin'], in_summary['tmax'], color='#c1c1ff', alpha=0.5, label=historical_label)
     if in_parameters['showRecords']:  # Show the historical records
-        ax1.plot(days, in_summary['recordMax'], color='red', alpha=0.2, linewidth=1, linestyle='dashed', label='Temp. max. record')
-        ax1.plot(days, in_summary['recordMin'], color='blue', alpha=0.2, linewidth=1, linestyle='dashed', label='Temp. min. record')
+        ax1.plot(days, in_summary['recordMax'], color='red', alpha=0.2, linewidth=1, linestyle='dashed', label='Max. temp. record')
+        ax1.plot(days, in_summary['recordMin'], color='blue', alpha=0.2, linewidth=1, linestyle='dashed', label='Min. temp. record')
 
-    ax1.plot(days, in_summary['tmed'], color='purple', alpha=0.6, linewidth=0.75, label='Mean historical')
+    if in_parameters['showMean']:  # Show the historical mean temperature line
+        ax1.plot(days, in_summary['tmed'], color='purple', alpha=0.6, linewidth=0.75, label='Historical mean temp.')
+
+    if in_parameters['showRecords']:  # Highlight the new max/min temperature record
+        new_max, new_min = get_new_record(in_current, in_summary)
+        ax1.scatter(new_max[:, 0], new_max[:, 1],  color='red', alpha=0.7, s=10, label='New record (max.)')
+        ax1.scatter(new_min[:, 0], new_min[:, 1], color='blue', alpha=0.7, s=10, label='New record (min.)')
+
     ax1.set_ylabel('Temperature (°C)', fontsize=14)
     ax1.legend(fontsize=12)
     ax1.set_title('Data from ' + in_parameters['stationName'])
@@ -303,7 +324,7 @@ def plot_result(in_summary, in_current, in_parameters):
         limit_max = max([max(in_summary['tmax']), max(in_current['tmax'])])
         limit_min = min([min(in_summary['tmin']), min(in_current['tmin'])])
 
-    ax1.axis([0, 364, limit_min - 2, limit_max + 2])
+    ax1.axis([0, 364, limit_min - 3, limit_max + 3])
     ax1.yaxis.set_major_locator(MultipleLocator(2))
     ax1.tick_params(axis='y', labelsize=12)
 

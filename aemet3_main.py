@@ -8,7 +8,7 @@ Marco A. Villena, PhD.
 __project_name__ = "AEMET temperature track"
 __author__ = "Marco A. Villena"
 __email__ = "mavillenas@proton.me"
-__version__ = "1.0"
+__version__ = "1.2"
 __project_date__ = '2023'
 
 
