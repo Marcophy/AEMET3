@@ -282,14 +282,16 @@ def plot_result(in_summary, in_current, in_parameters):
     # Top panel: Temperature
     days = np.arange(len(in_summary['tmax']))
     days_current = np.arange(len(in_current['tmax']))
-    ax1.plot(days_current, in_current['tmax'], color='red', linewidth=1, linestyle='dotted', label='Max. temperature')
-    ax1.plot(days_current, in_current['tmin'], color='blue', linewidth=1, linestyle='dotted', label='Min. temperature')
-    if in_parameters['showRecords']:  # Show the historical records
-        record_label = 'Historical records ' + str(in_parameters['firstYear']) + ' - ' + str(in_parameters['lastYear'])
-        ax1.fill_between(days, in_summary['recordMin'], in_summary['recordMax'], color='#e5e5ff', alpha=0.5, label=record_label)
+    ax1.plot(days_current, in_current['tmax'], color='red', alpha=0.5, linewidth=1, label='Max. temperature')
+    ax1.plot(days_current, in_current['tmin'], color='blue', alpha=0.5, linewidth=1, label='Min. temperature')
+
     historical_label = 'Historical ' + str(in_parameters['firstYear']) + ' - ' + str(in_parameters['lastYear'])
     ax1.fill_between(days, in_summary['tmin'], in_summary['tmax'], color='#c1c1ff', alpha=0.5, label=historical_label)
-    ax1.plot(days, in_summary['tmed'], color='purple', linewidth=1, label='Mean historical')
+    if in_parameters['showRecords']:  # Show the historical records
+        ax1.plot(days, in_summary['recordMax'], color='red', alpha=0.2, linewidth=1, linestyle='dashed', label='Temp. max. record')
+        ax1.plot(days, in_summary['recordMin'], color='blue', alpha=0.2, linewidth=1, linestyle='dashed', label='Temp. min. record')
+
+    ax1.plot(days, in_summary['tmed'], color='purple', alpha=0.6, linewidth=0.75, label='Mean historical')
     ax1.set_ylabel('Temperature (°C)', fontsize=14)
     ax1.legend(fontsize=12)
     ax1.set_title('Data from ' + in_parameters['stationName'])
