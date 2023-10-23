@@ -286,7 +286,7 @@ def get_new_record(in_current, in_summary):
         if in_current['tmin'][i] < in_summary['recordMin'][i]:
             mins.append([i, in_current['tmin'][i]])
 
-    return np.array(maxs), np.array(mins)
+    return maxs, mins
 
 
 def plot_result(in_summary, in_current, in_parameters):
@@ -310,8 +310,10 @@ def plot_result(in_summary, in_current, in_parameters):
 
     if in_parameters['showRecords']:  # Highlight the new max/min temperature record
         new_max, new_min = get_new_record(in_current, in_summary)
-        ax1.scatter(new_max[:, 0], new_max[:, 1],  color='red', alpha=0.7, s=10, label='New record (max.)')
-        ax1.scatter(new_min[:, 0], new_min[:, 1], color='blue', alpha=0.7, s=10, label='New record (min.)')
+        if new_max:
+            ax1.scatter(*zip(*new_max), color='red', alpha=0.7, s=10, label='New record (max.)')
+        if new_min:
+            ax1.scatter(*zip(*new_min), color='blue', alpha=0.7, s=10, label='New record (min.)')
 
     ax1.set_ylabel('Temperature (°C)', fontsize=14)
     ax1.legend(fontsize=12)
