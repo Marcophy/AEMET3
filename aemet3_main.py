@@ -8,7 +8,7 @@ Marco A. Villena, PhD.
 __project_name__ = "AEMET temperature track"
 __author__ = "Marco A. Villena"
 __email__ = "mavillenas@proton.me"
-__version__ = "1.2"
+__version__ = "2.0"
 __project_date__ = '2023'
 
 
@@ -38,18 +38,18 @@ else:
     print('ERROR: config.json file not found.')
     exit()
 
-# Load the APIKEY from environment
-load_dotenv()
-api_key = os.getenv("APIKEY")
-if api_key is None:
-    print('ERROR: API KEY cannot be loaded.')
-    exit()
-
 # Checking the data folder, historical, and summary files
-if kernel.check_time(setup_parameters['lastReport'], setup_parameters['timeElapse']):
+if kernel.check_day(setup_parameters['workDay']):  # Check if today is the work day
     # Update config.json
     today = datetime.now().strftime('%Y-%m-%d')
     setup_parameters = kernel.update_setup(setup_parameters, 'lastReport', today, setup_path)
+
+    # Load the APIKEY from environment
+    load_dotenv()
+    api_key = os.getenv("APIKEY")
+    if api_key is None:
+        print('ERROR: API KEY cannot be loaded.')
+        exit()
 
     # Checking data folder
     if os.path.exists(os.path.join(os.getcwd(), 'data')):  # Checking <data> folder

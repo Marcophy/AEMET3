@@ -8,7 +8,7 @@ Marco A. Villena, PhD.
 __project_name__ = "AEMET temperature track - KERNEL"
 __author__ = "Marco A. Villena"
 __email__ = "mavillenas@proton.me"
-__version__ = "1.2"
+__version__ = "2.0"
 __project_date__ = '2023'
 
 # ****** Modules ******
@@ -38,20 +38,14 @@ def load_json(in_file):
         return False
 
 
-def check_time(in_last_report, in_elapse):
-    """
-    Check if the time elapsed since the last report is greater than a specified duration.
-
-    Parameters:
-    - in_last_report (str): The date of the last report in the format 'YYYY-MM-DD'.
-    - in_elapse (int): The duration in days.
-
-    Returns:
-    - bool: True if the time elapsed is greater than the specified duration, False otherwise.
-    """
-    
-    delta = datetime.today() - datetime.strptime(in_last_report, "%Y-%m-%d")
-    return delta > timedelta(days=in_elapse)
+def check_day(in_workday):
+    week_day = datetime.now().strftime("%A")
+    if in_workday == 'All':
+        return True
+    elif in_workday == week_day:
+        return True
+    else:
+        return False
 
 
 def update_setup(in_json, in_id, in_new_parameter, in_path):
@@ -157,33 +151,6 @@ def post_process_data(in_path, out_path):
     except Exception as ferr:
         print('ERROR saving summary.json file:', ferr)
         return False
-
-
-def generate_url(in_year, in_station):  # OBSOLETE
-    """
-    Generate a URL for retrieving climatological data from AEMET API.
-
-    Args:
-        in_year (int): The year for which the data is requested.
-        in_station (str): The ID of the weather station.
-
-    Returns:
-        str: The generated URL.
-
-    Raises:
-        ValueError: If the input format is invalid.
-    """
-
-    if not isinstance(in_year, int) or not isinstance(in_station, str):
-        raise ValueError("Invalid input format")
-
-    url = "https://opendata.aemet.es/opendata/api/valores/climatologicos/diarios/datos/fechaini/{dateIniStr}/fechafin/{dateEndStr}/estacion/{stationid}"
-    date_ini = str(in_year) + '-01-01T00%3A00%3A00UTC'  # Initial date (format: YYYY-MM-DDTHH%3AMM%3ASSUTC)
-    date_end = str(in_year) + '-12-31T00%3A00%3A00UTC'  # Final date (format: AAAA-MM-DDTHH%3AMM%3ASSUTC)
-
-    url = url.format(dateIniStr=date_ini, dateEndStr=date_end, stationid=in_station)
-
-    return url
 
 
 def get_data_from_url(in_url, in_api_key):
@@ -369,3 +336,4 @@ def plot_result(in_summary, in_current, in_parameters):
     plt.show()
 
     return True
+

@@ -1,6 +1,5 @@
 {
-  "lastReport": "2023-10-22",
-  "timeElapse": 7,
+  "workDay": "All",
   "firstYear": 1953,
   "lastYear": 2022,
   "stationId": "5514",
@@ -14,5 +13,6 @@
   "figureColor": [
     false,
     true
-  ]
+  ],
+  "lastReport": "2023-11-28"
 }
