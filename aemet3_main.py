@@ -1,15 +1,15 @@
 """
 AEMET temperature track project
 Marco A. Villena, PhD.
-2023
+2023 - 2024
 """
 
 # ****** dunder variables ******
 __project_name__ = "AEMET temperature track"
 __author__ = "Marco A. Villena"
 __email__ = "mavillenas@proton.me"
-__version__ = "2.0"
-__project_date__ = '2023'
+__version__ = "2.1"
+__project_date__ = '2023 - 2024'
 
 
 # ****** Modules ******
@@ -93,7 +93,7 @@ if kernel.check_day(setup_parameters['workDay']):  # Check if today is the work 
             if current_year is False:
                 exit()
             else:
-                if len(current_year) >= 365:  # If the new year has all data
+                if len(current_year['tmax']) >= 365:  # If the new year has all data
                     temp_historical = kernel.load_json(historical_path)
                     temp_historical.append(current_year)
                     with open(historical_path, 'w') as file:
@@ -105,9 +105,9 @@ if kernel.check_day(setup_parameters['workDay']):  # Check if today is the work 
         else:
             print('historical.json --> OK')
 
-    if files_control['summary'] is False and files_control['historical'] is True:
+    if files_control['summary'] is False and files_control['historical'] is True:  #
         if kernel.post_process_data(historical_path, summary_path):
-            print('summary.json file generated')
+            print('summary.json file generated.')
             files_control['summary'] = True
         else:
             exit()

@@ -1,7 +1,7 @@
 {
   "workDay": "All",
   "firstYear": 1953,
-  "lastYear": 2022,
+  "lastYear": 2023,
   "stationId": "5514",
   "stationName": "BASE AEREA ARMILLA - GRANADA",
   "showMean": true,
@@ -14,5 +14,5 @@
     false,
     true
   ],
-  "lastReport": "2023-11-28"
+  "lastReport": "2024-04-09"
 }
