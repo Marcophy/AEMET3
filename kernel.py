@@ -24,6 +24,16 @@ from time import sleep
 
 # ****** Functions ******
 def load_json(in_file):
+    """
+    Open a JSON file.
+
+    Args:
+        in_file (str): Path of the JSON file
+
+    Returns:
+        Dict: The information loaded from the JSON file.
+    """
+
     try:
         with open(in_file, 'r') as file:
             return json.load(file)
@@ -39,6 +49,15 @@ def load_json(in_file):
 
 
 def check_day(in_workday):
+    """
+        Check if the current week day
+    Args:
+        in_workday (str): The day to check against the current week day.
+
+    Returns:
+        bool: True if the input day matches the current week day or if 'All' is provided, False otherwise.
+    """
+
     week_day = datetime.now().strftime("%A")
     if in_workday == 'All':
         return True
@@ -182,6 +201,18 @@ def get_data_from_url(in_url, in_api_key):
 
 
 def get_current_data(in_url, in_api_key, in_year):
+    """
+    Retrieve current data for a given year from a URL using an API key.
+
+    Args:
+        in_url (str): The URL to retrieve data from.
+        in_api_key (str): The API key to authenticate the request.
+        in_year (int): The year for which data is being retrieved.
+
+    Returns:
+        dict: A dictionary containing the data for the specified year, including temperature and precipitation values, and flags for leap year and completeness.
+    """
+
     data_json = get_data_from_url(in_url, in_api_key)
     sleep(1)
 
@@ -226,23 +257,69 @@ def get_current_data(in_url, in_api_key, in_year):
 
 
 def download_year_data(in_year, in_station, in_api_key):
+    """
+    Downloads daily climatological data for a specific year and station using the AEMET API. The AEMET API does not allow to download more
+    than 6 months in only one shoot, for this reason the year is downloaded in two times.
+
+    Args:
+        in_year (int): The year for which data is being downloaded.
+        in_station (str): The station ID for the data retrieval.
+        in_api_key (str): The API key for authentication.
+
+    Returns:
+        dict: A dictionary containing temperature and precipitation values for the year, with leap year and completeness flags.
+    """
+
     # Generate the query url according to the input data
     url = "https://opendata.aemet.es/opendata/api/valores/climatologicos/diarios/datos/fechaini/{dateIniStr}/fechafin/{dateEndStr}/estacion/{stationid}"
     date_ini = str(in_year) + '-01-01T00%3A00%3A00UTC'  # Initial date (format: YYYY-MM-DDTHH%3AMM%3ASSUTC)
+    date_mid1 = str(in_year) + '-06-30T00%3A00%3A00UTC'  # Initial date (format: YYYY-MM-DDTHH%3AMM%3ASSUTC)
+    date_mid2 = str(in_year) + '-07-01T00%3A00%3A00UTC'  # Initial date (format: YYYY-MM-DDTHH%3AMM%3ASSUTC)
     date_end = str(in_year) + '-12-31T00%3A00%3A00UTC'  # Final date (format: AAAA-MM-DDTHH%3AMM%3ASSUTC)
 
-    url = url.format(dateIniStr=date_ini, dateEndStr=date_end, stationid=in_station)
+    url_first = url.format(dateIniStr=date_ini, dateEndStr=date_mid1, stationid=in_station)
+    url_second = url.format(dateIniStr=date_mid2, dateEndStr=date_end, stationid=in_station)
 
     # Get url of the output of the query
-    data_url = get_data_from_url(url, in_api_key)
+    # First part of the year
+    data_url = get_data_from_url(url_first, in_api_key)
     if data_url is not None and data_url.get('estado') == 200:
-        return get_current_data(data_url.get('datos'), in_api_key, in_year)
+        first_part = get_current_data(data_url.get('datos'), in_api_key, in_year)
     else:
         print('ERROR: Data cannot be downloaded from API.')
+        print('\tDescription:', data_url['description'])
         return False
+
+    # Second part of the year
+    data_url = get_data_from_url(url_second, in_api_key)
+    if data_url is not None and data_url.get('estado') == 200:
+        second_part = get_current_data(data_url.get('datos'), in_api_key, in_year)
+    else:
+        print('ERROR: Data cannot be downloaded from API.')
+        print('\tDescription:', data_url['description'])
+        return False
+
+    # Concatenate the two parts of the year
+    first_part['tmax'] = first_part['tmax'] + second_part['tmax']
+    first_part['tmed'] = first_part['tmed'] + second_part['tmed']
+    first_part['tmin'] = first_part['tmin'] + second_part['tmin']
+    first_part['prec'] = first_part['prec'] + second_part['prec']
+
+    return first_part
 
 
 def get_new_record(in_current, in_summary):
+    """
+    Calculate new temperature records based on current data and historical records.
+
+    Args:
+        in_current (dict): Dictionary containing current temperature data including 'tmax' and 'tmin'.
+        in_summary (dict): Dictionary containing historical temperature records including 'recordMax' and 'recordMin'.
+
+    Returns:
+        tuple: Two lists containing indices and corresponding temperatures for new maximum and minimum temperature records.
+    """
+
     maxs = []
     mins = []
 
@@ -257,6 +334,32 @@ def get_new_record(in_current, in_summary):
 
 
 def plot_result(in_summary, in_current, in_parameters):
+    """
+    Plot the temperature and precipitation data for a specific location over time. Customize the plot
+    appearance based on input parameters such as figure size, color, and data display options. Show historical
+    records, mean temperature line, and highlight new maximum and minimum temperature records. Display the
+    data in two panels: one for temperature and the other for precipitation. The x-axis represents days of
+    the year, and the y-axes show temperature in degrees Celsius and rainfall in millimeters. Return True
+    after displaying the plot.
+
+    Args:
+        in_summary (dict): A dictionary containing summary temperature and precipitation data.
+        in_current (dict): A dictionary containing current temperature and precipitation data.
+        in_parameters (dict): A dictionary containing parameters for customizing the plot.
+
+    Returns:
+        bool: True if the plot is displayed successfully.
+
+    Note:
+        - `in_summary` and `in_current` should have keys: 'tmax', 'tmin', 'prec', 'recordMax', 'recordMin', 'tmed'.
+        - `in_parameters` should have keys: 'figureSize', 'firstYear', 'lastYear', 'showRecords', 'showMean', 'stationName', 'figureColor'.
+        - The plot consists of two panels: one for temperature and the other for precipitation.
+        - The temperature panel shows maximum and minimum temperature data along with historical records and mean temperature line.
+        - The precipitation panel displays historical precipitation data and current year's precipitation data.
+        - The x-axis represents days of the year, and the y-axes show temperature in degrees Celsius and rainfall in millimeters.
+        - The plot appearance can be customized using the input parameters.
+    """
+
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=tuple(in_parameters['figureSize']), gridspec_kw={'height_ratios': [2, 1]}, sharex=True)
     plt.subplots_adjust(hspace=0.05)  # Define the space between plots
 

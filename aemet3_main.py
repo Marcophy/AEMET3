@@ -8,7 +8,7 @@ Marco A. Villena, PhD.
 __project_name__ = "AEMET temperature track"
 __author__ = "Marco A. Villena"
 __email__ = "mavillena@ugr.es"
-__version__ = "2.1"
+__version__ = "3.0"
 __project_date__ = '2023 - 2024'
 
 
@@ -23,11 +23,12 @@ from datetime import datetime
 # --- Check the integrity of the structure file
 files_control = {'historical': True, 'summary': True}  # Control if the historical and the summary file exist
 
-# Checking setup file
+# Definition of the files path
 setup_path = os.path.join(os.getcwd(), 'config.json')
 historical_path = os.path.join(os.getcwd(), 'data', 'historical.json')
 summary_path = os.path.join(os.getcwd(), 'data', 'summary.json')
 
+# Checking setup file
 if os.path.exists(setup_path):
     setup_parameters = kernel.load_json(setup_path)
     if setup_parameters is False:
@@ -40,10 +41,6 @@ else:
 
 # Checking the data folder, historical, and summary files
 if kernel.check_day(setup_parameters['workDay']):  # Check if today is the work day
-    # Update config.json
-    today = datetime.now().strftime('%Y-%m-%d')
-    setup_parameters = kernel.update_setup(setup_parameters, 'lastReport', today, setup_path)
-
     # Load the APIKEY from environment
     load_dotenv()
     api_key = os.getenv("APIKEY")
@@ -52,9 +49,9 @@ if kernel.check_day(setup_parameters['workDay']):  # Check if today is the work 
         exit()
 
     # Checking data folder
-    if os.path.exists(os.path.join(os.getcwd(), 'data')):  # Checking <data> folder
-        if os.path.exists(historical_path):  # Checking <historical.json> file inside the <data> folder
-            if not os.path.exists(summary_path):  # Checking <summary.json> file inside the <data> folder
+    if os.path.exists(os.path.join(os.getcwd(), 'data')):  # Checking if <data> folder exists
+        if os.path.exists(historical_path):  # Checking if <historical.json> file exists
+            if not os.path.exists(summary_path):  # Checking <summary.json> file exists
                 files_control['summary'] = False
         else:
             files_control['historical'] = False
@@ -80,15 +77,19 @@ if kernel.check_day(setup_parameters['workDay']):  # Check if today is the work 
             else:
                 clean_data.append(year_data)
 
-        # Save historical data
+        # Save historical.json data
         with open(historical_path, 'w') as file:
             json.dump(clean_data, file)
 
         files_control['historical'] = True
         print('historical.json file created.')
 
-    else:  # Update historical if it is outdated
-        if datetime.now().year > setup_parameters['lastYear'] + 1:
+    else:
+        # Update historical.json if it is outdated
+        historical = kernel.load_json(historical_path)
+
+        if datetime.now().year > historical[-1]['year'] + 1:
+            print('Historical file outdated. Updating ...')
             current_year = kernel.download_year_data(datetime.now().year - 1, setup_parameters['stationId'], api_key)
             if current_year is False:
                 exit()
@@ -129,6 +130,10 @@ if kernel.check_day(setup_parameters['workDay']):  # Check if today is the work 
         # --- Plot result
         print('Plotting ...')
         kernel.plot_result(summary_data, current_data, setup_parameters)
+
+    # Update the latest report date in config.json
+    today = datetime.now().strftime('%Y-%m-%d')
+    setup_parameters = kernel.update_setup(setup_parameters, 'lastReport', today, setup_path)
 
 
 print('END')
